@@ -1,8 +1,11 @@
+create.blade..php news
+
 @extends('base.base')
 
 @section('title', 'Create News')
 
 @section('content')
+
     <div class="container">
         <form action="{{ route('news.store') }}" method="POST" enctype="multipart/form-data" class="p-4 shadow rounded bg-light">
             @csrf
@@ -21,9 +24,10 @@
 
             <div class="mb-3">
                 <label for="description" class="form-label">Information</label>
-                <textarea name="description" id="description" class="form-control" placeholder="Enter Information" rows="4" required></textarea>
+                <textarea name="description" id="editor" class="form-control" placeholder="Enter Information" rows="4" required></textarea>
                 <div id="wordCount" class="form-text text-muted">Word count: 0/600</div>
             </div>
+
 
             <div class="mb-3">
                 <label for="start_date" class="form-label">Start Date</label>
@@ -161,6 +165,42 @@
                 <button type="submit" class=" btn btn-success">Submit News</button>
             </div>
         </form>
+
+          @push('scripts')
+        <script src="https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js"></script>
+        <script>
+            CKEDITOR.replace('editor', {
+                toolbar: [
+                    { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike'] },
+                    { name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent'] },
+                    { name: 'styles', items: ['FontSize'] },
+                    { name: 'clipboard', items: ['Undo', 'Redo'] },
+                    { name: 'links', items: ['Link', 'Unlink'] },
+                    { name: 'insert', items: ['Image', 'Table'] },
+                    { name: 'tools', items: ['Maximize'] }
+                ]
+            });
+
+            const maxWords = 600;
+
+            CKEDITOR.instances.editor.on('change', function () {
+                const data = CKEDITOR.instances.editor.getData();
+                const text = data.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').trim();
+                const words = text.split(/\s+/).filter(word => word.length > 0);
+                const wordCount = words.length;
+
+                const wordCountDisplay = document.getElementById('wordCount');
+                if (wordCount > maxWords) {
+                    wordCountDisplay.innerHTML = `<span class="text-danger">Word count: ${wordCount}/${maxWords} (exceeded!)</span>`;
+                } else {
+                    wordCountDisplay.innerHTML = `Word count: ${wordCount}/${maxWords}`;
+                }
+            });
+        </script>
+        @endpush
+
+
+
          <div class="mt-3 d-grid">
             <button id="saveDraftBtn" class="btn btn-secondary">Save as Draft</button>
         </div>
